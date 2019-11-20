@@ -1,0 +1,79 @@
+Pour chaque bloc de 8x8 pixels gris
+    convertit le bloc gris en luma Y
+    writeBlock avec table 0
+    
+    writeBlock:
+     <- bloc de 8x8 pixels d'un composant
+     <- table de quantization
+     <- prevDC
+     -> nextDC
+    
+     fdct bloc
+    
+     quantization DC
+     emit huffman delta DC
+    
+     pour chaque AC en ordre zigzag:
+       quantization
+       emut huffman
+Fin
+
+Pour chaque bloc de 16x16 pixels RGBA
+	Pour chacun des 4 sous-blocs de 8x8 pixels
+		convertit bloc en Y, Cb, Cr
+        writeBlock Y avec table 0
+    convertit 16x16 Cb en 8x8 Cb
+	writeBlock Cb avec table 1
+    conv 16x16 Cr en 8x8 Cr
+    writeBlock Cr avec table 1
+Fin
+
+semi:
+0 1 2: 0 0 0 0;
+0: 1 9 0 0;
+2: 1 63 0 0 ;
+1: 1 63 0 0 ;
+0: 10 63 0 0;
+
+ScanScript:
+0,1,2: 0-0,  0, 1; 
+    0: 1-5,  0, 2;
+    1: 1-5,  0, 2;
+    2: 1-5,  0, 2;
+    1: 6-63, 0, 2;
+    2: 6-63, 0, 2;
+    0: 6-63, 0, 2; 
+
+SOS	ss=0	se=0	ah=0	al=1
+  #1 td=0 ta=0
+  #2 td=1 ta=1
+  #3 td=1 ta=1
+SOS	ss=1	se=5	ah=0	al=2
+  #1 td=0 ta=0
+SOS	ss=1	se=5	ah=0	al=2
+  #2 td=0 ta=0
+SOS	ss=1	se=5	ah=0	al=2
+  #3 td=0 ta=0
+SOS	ss=6	se=63	ah=0	al=2
+  #2 td=0 ta=2
+SOS	ss=6	se=63	ah=0	al=2
+  #3 td=0 ta=2
+SOS	ss=6	se=63	ah=0	al=2
+  #1 td=0 ta=1
+SOS	ss=1	se=63	ah=2	al=1
+  #1 td=0 ta=3
+SOS	ss=1	se=63	ah=2	al=1
+  #2 td=0 ta=3
+SOS	ss=1	se=63	ah=2	al=1
+  #3 td=0 ta=3
+SOS	ss=0	se=0	ah=1	al=0
+  #1 td=0 ta=0
+  #2 td=1 ta=1
+  #3 td=1 ta=1
+SOS	ss=1	se=63	ah=1	al=0
+  #1 td=0 ta=3
+SOS	ss=1	se=63	ah=1	al=0
+  #2 td=0 ta=3
+SOS	ss=1	se=63	ah=1	al=0
+  #3 td=0 ta=3
+
