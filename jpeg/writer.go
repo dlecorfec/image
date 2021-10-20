@@ -356,6 +356,26 @@ func (e *encoder) writeDHT(nComponent int) {
 	}
 }
 
+// writePartialDHT writes the Define Huffman Table marker.
+func (e *encoder) writePartialDHT(ydc, yac, cdc, cac bool) {
+	markerlen := 2
+	toto := []bool{ydc, yac, cdc, cac}
+	for i, x := range toto {
+		if x {
+			markerlen += 1 + 16 + len(theHuffmanSpec[i].value)
+		}
+	}
+
+	e.writeMarkerHeader(dhtMarker, markerlen)
+	for i, x := range toto {
+		if x {
+			e.writeByte("\x00\x10\x01\x11"[i])
+			e.write(theHuffmanSpec[i].count[:])
+			e.write(theHuffmanSpec[i].value)
+		}
+	}
+}
+
 // writeBlock writes a block of pixel data using the given quantization table,
 // returning the post-quantized DC value of the DCT-transformed block. b is in
 // natural (not zig-zag) order.
@@ -532,9 +552,9 @@ func (e *encoder) writeProgressiveSOS(m image.Image, zigStart, zigEnd, ah, al, c
 	} else {
 		e.write(sosHeaderYCbCrShort)
 	}
-	a := byte(ah)<<4 + byte(al)&0x0F
+	refinement := byte(ah)<<4 + byte(al)&0x0F
 
-	progressiveScript := []byte{byte(zigStart), byte(zigEnd), a}
+	progressiveScript := []byte{byte(zigStart), byte(zigEnd), refinement}
 	e.write(progressiveScript)
 	var (
 		// Scratch buffers to hold the YCbCr values.
@@ -781,9 +801,23 @@ func (e *encoder) writeProgressive(m image.Image, b image.Rectangle, nComponent 
 	// Write the Huffman tables.
 	e.writeDHT(nComponent)
 	// Write the image data.
-	e.writeProgressiveSOS(m, 0, 0, 0, 0, -1)
-	e.writeProgressiveSOS(m, 1, 9, 0, 0, 0)
-	e.writeProgressiveSOS(m, 1, 63, 0, 0, 2)
-	e.writeProgressiveSOS(m, 1, 63, 0, 0, 1)
-	e.writeProgressiveSOS(m, 10, 63, 0, 0, 0)
+	if nComponent == 3 {
+		e.writeProgressiveSOS(m, 0, 0, 0, 0, -1)
+		e.writeProgressiveSOS(m, 1, 9, 0, 0, 0)
+		e.writeProgressiveSOS(m, 1, 63, 0, 0, 2)
+		e.writeProgressiveSOS(m, 1, 63, 0, 0, 1)
+		e.writeProgressiveSOS(m, 10, 63, 0, 0, 0)
+	} else {
+		e.writeProgressiveSOS(m, 0, 0, 0, 0, 0)
+		e.writeProgressiveSOS(m, 1, 9, 0, 0, 0)
+		e.writeProgressiveSOS(m, 10, 63, 0, 0, 0)
+	}
 }
+
+/*
+	//e.writePartialDHT(true, false, true, false)
+	//e.writePartialDHT(false, true, false, false)
+	//e.writePartialDHT(false, false, false, true)
+	//e.writePartialDHT(false, false, false, true)
+	//e.writePartialDHT(false, true, false, false)
+*/

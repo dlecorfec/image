@@ -53,7 +53,7 @@ func (d *decoder) ensureNBits(n int32) error {
 			if err == io.EOF {
 				return errShortHuffmanData
 			}
-			log.Printf("ensureNBits(%d): bits=(%#v) %s\n", n, d.bits, err)
+			//log.Printf("ensureNBits(%d): bits=(%#v) %s\n", n, d.bits, err)
 			return err
 		}
 		d.bits.a = d.bits.a<<8 | uint32(c)
@@ -187,12 +187,12 @@ func (d *decoder) decodeHuffman(h *huffman) (uint8, error) {
 			if err != errMissingFF00 && err != errShortHuffmanData {
 				return 0, err
 			}
-			log.Printf("decodeHuffman: err=%s", err)
+			//log.Printf("decodeHuffman: err=%s", err)
 			// There are no more bytes of data in this segment, but we may still
 			// be able to read the next symbol out of the previously read bits.
 			// First, undo the readByte that the ensureNBits call made.
 			if d.bytes.nUnreadable != 0 {
-				log.Printf("bytes.nUnreadable != 0 (%d)", d.bytes.nUnreadable)
+				//log.Printf("bytes.nUnreadable != 0 (%d)", d.bytes.nUnreadable)
 				d.unreadByteStuffedByte()
 			}
 			goto slowPath

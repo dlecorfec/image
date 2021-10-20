@@ -15,7 +15,7 @@ Pour chaque bloc de 8x8 pixels gris
     
      pour chaque AC en ordre zigzag:
        quantization
-       emut huffman
+       emit huffman
 Fin
 
 Pour chaque bloc de 16x16 pixels RGBA

@@ -1,0 +1,12 @@
+        # Initial DC scan for Y,Cb,Cr
+        0,1,2: 0-0,   0, 0 ;
+        # First AC scan: send first 9 Y AC coefficients
+        0:     1-9,   0, 0 ;
+        # Send all Cr,Cb AC coefficients
+        # (chroma data is usually too small to be worth subdividing further;
+        #  but note we send Cr first since eye is least sensitive to Cb)
+        2:     1-63,  0, 0 ;
+        1:     1-63,  0, 0 ;
+        # Send remaining Y AC coefficients
+        0:     10-63,  0, 0 ;
+

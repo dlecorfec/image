@@ -10,7 +10,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"os"
@@ -150,10 +150,16 @@ func TestWriter(t *testing.T) {
 			t.Error(tc.filename, err)
 			continue
 		}
+		// XXX dlc hack
+		suffix := fmt.Sprintf(".%t.q%d.jpg", tc.progressive, tc.quality)
+		err = os.WriteFile(tc.filename+suffix, buf.Bytes(), 0644)
+		if err != nil {
+			t.Errorf("cant write %s: %s", tc.filename+suffix, err)
+		}
 		// Decode that JPEG.
 		m1, err := Decode(&buf)
 		if err != nil {
-			log.Printf("%s %s progressive=%v", tc.filename, err, tc.progressive)
+			log.Printf("decode pr=%t q=%d %s: %s", tc.progressive, tc.quality, tc.filename, err)
 			t.Error(tc.filename, err)
 			continue
 		}
@@ -270,7 +276,7 @@ func BenchmarkEncodeRGBA(b *testing.B) {
 	b.ResetTimer()
 	options := &Options{Quality: 90}
 	for i := 0; i < b.N; i++ {
-		Encode(ioutil.Discard, img, options)
+		Encode(io.Discard, img, options)
 	}
 }
 
@@ -292,6 +298,6 @@ func BenchmarkEncodeYCbCr(b *testing.B) {
 	b.ResetTimer()
 	options := &Options{Quality: 90}
 	for i := 0; i < b.N; i++ {
-		Encode(ioutil.Discard, img, options)
+		Encode(io.Discard, img, options)
 	}
 }
